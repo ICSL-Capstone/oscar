@@ -1154,6 +1154,7 @@
         </inertia>
       </inertial>
     </link>
+
     <joint name='rover/imu_joint' type='revolute'>
       <child>rover/imu_link</child>
       <parent>base_link</parent>
@@ -1325,12 +1326,21 @@
     </plugin>
 
     <!-- start of section: add camera and lidar by kwon -->
-    <include>
+    <!-- <include>
       <uri>model://usb_cam</uri>
       <pose>0.35 0 1.92 0 0.261799 0</pose>
     </include>
     <joint name="usb_cam_joint" type="fixed">
       <child>usb_cam::link</child>
+      <parent>base_link</parent>
+    </joint> -->
+    <include>
+      <uri>model://depth_camera</uri>
+      <!-- <pose>0.35 0 1.92 0 0.261799 0</pose> -->
+      <pose>0 0 3 0 0 0</pose>
+    </include>
+    <joint name="depth_camera_joint" type="fixed">
+      <child>depth_camera::depth_camera_link</child>
       <parent>base_link</parent>
     </joint>
     <include>
@@ -1342,6 +1352,7 @@
       <child>ouster::os1_sensor</child>
       <parent>base_link</parent>
     </joint>
+
     <!-- end of section -->
 
   </model>

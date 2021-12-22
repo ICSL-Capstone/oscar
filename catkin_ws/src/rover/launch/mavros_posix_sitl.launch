@@ -14,7 +14,7 @@
     <arg name="tf2" default="true"/>
     <arg name="est" default="ekf2"/>
     <arg name="vehicle" default="rover"/>
-    <arg name="world_name" default="sonoma_raceway"/>
+    <arg name="world_name" default="empty_world"/>
     <arg name="world" default="$(find rover)/worlds/$(arg world_name).world"/>
     <arg name="sdf" default="$(find rover)/models/$(arg vehicle)/model.sdf"/>
 
@@ -61,7 +61,10 @@
     </node> 
     <!-- tf2 -->
     <node if="$(arg tf2)" pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_laser"
-        args="0.31 0 2.02 0 0 0 1.0 base_link ouster::os1_sensor">
+    args="0.31 0 2.02 0 0 0 1.0 base_link ouster::os1_sensor">
+    </node>
+    <node if="$(arg tf2)" pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_depth"
+        args="0 0 3 0 1.57 0 base_link depth_camera::depth_camera_link">
     </node>
     
     <node pkg="rover" type="joystick_translator.py" name="joystick_translator">
