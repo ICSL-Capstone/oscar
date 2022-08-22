@@ -68,7 +68,7 @@ class DriveLog:
         
         self.data.read(normalize = False)
     
-        self.test_data = list(zip(self.data.image_names, self.data.velocities, self.data.measurements))
+        self.test_data = list(zip(self.data.image_names, self.data.measurements))
         self.num_test_samples = len(self.test_data)
         
         print('Test samples: {0}'.format(self.num_test_samples))
@@ -157,91 +157,38 @@ class DriveLog:
 
         file.write('image_name, label_steering_angle, pred_steering_angle, abs_error, squared_error\n')
 
-        if Config.neural_net['lstm'] is True:
-            images = []
-            #images_names = []
-            cnt = 1
+        for image_name, measurement in bar(self.test_data):   
+            image_fname = self.data_path + '/' + image_name
+            image = cv2.imread(image_fname)
 
-            for image_name, velocity, measurement in bar(self.test_data):   
-                image_fname = self.data_path + '/' + image_name
-                image = cv2.imread(image_fname)
+            # if collected data is not cropped then crop here
+            # otherwise do not crop.
+            if Config.data_collection['crop'] is not True:
+                image = image[Config.data_collection['image_crop_y1']:Config.data_collection['image_crop_y2'],
+                            Config.data_collection['image_crop_x1']:Config.data_collection['image_crop_x2']]
 
-                # if collected data is not cropped then crop here
-                # otherwise do not crop.
-                if Config.data_collection['crop'] is not True:
-                    image = image[Config.data_collection['image_crop_y1']:Config.data_collection['image_crop_y2'],
-                                Config.data_collection['image_crop_x1']:Config.data_collection['image_crop_x2']]
+            image = cv2.resize(image, (Config.neural_net['input_image_width'],
+                                    Config.neural_net['input_image_height']))
+            image = self.image_process.process(image)
+            
+            npimg = np.expand_dims(image, axis=0)
+            predict = self.net_model.model.predict(npimg)
+            pred_steering_angle = predict[0][0]
+            pred_steering_angle = pred_steering_angle / Config.neural_net['steering_angle_scale']
+            
+            label_steering_angle = measurement
+            self.measurements.append(label_steering_angle)
+            self.predictions.append(pred_steering_angle)
+            diff = abs(label_steering_angle - pred_steering_angle)
+            self.differences.append(diff)
+            self.squared_differences.append(diff**2)
+            #print(image_name, measurement[0], predict,\ 
+            #                  abs(measurement[0]-predict))
+            log = image_name+','+str(label_steering_angle) + ',' + str(pred_steering_angle)\
+                            +','+str(diff)\
+                            +','+str(diff**2)
 
-                image = cv2.resize(image, (Config.neural_net['input_image_width'],
-                                        Config.neural_net['input_image_height']))
-                image = self.image_process.process(image)
-
-                images.append(image)
-                #images_names.append(image_name)
-                
-                if cnt >= Config.neural_net['lstm_timestep']:
-                    trans_image = np.array(images).reshape(-1, Config.neural_net['lstm_timestep'], 
-                                                Config.neural_net['input_image_height'],
-                                                Config.neural_net['input_image_width'],
-                                                Config.neural_net['input_image_depth'])                    
-
-                    predict = self.net_model.model.predict(trans_image)
-                    pred_steering_angle = predict[0][0]
-                    pred_steering_angle = pred_steering_angle / Config.neural_net['steering_angle_scale']
-                
-                    if Config.neural_net['num_outputs'] == 2:
-                        pred_throttle = predict[0][1]
-                    
-                    label_steering_angle = measurement[0] # labeled steering angle
-                    self.measurements.append(label_steering_angle)
-                    self.predictions.append(pred_steering_angle)
-                    diff = abs(label_steering_angle - pred_steering_angle)
-                    self.differences.append(diff)
-                    self.squared_differences.append(diff*2)
-                    log = image_name+','+str(label_steering_angle)+','+str(pred_steering_angle)\
-                                    +','+str(diff)\
-                                    +','+str(diff**2)
-
-                    file.write(log+'\n')
-                    # delete the 1st element
-                    del images[0]
-                cnt += 1
-        else:
-            for image_name, velocity, measurement in bar(self.test_data):   
-                image_fname = self.data_path + '/' + image_name
-                image = cv2.imread(image_fname)
-
-                # if collected data is not cropped then crop here
-                # otherwise do not crop.
-                if Config.data_collection['crop'] is not True:
-                    image = image[Config.data_collection['image_crop_y1']:Config.data_collection['image_crop_y2'],
-                                Config.data_collection['image_crop_x1']:Config.data_collection['image_crop_x2']]
-
-                image = cv2.resize(image, (Config.neural_net['input_image_width'],
-                                        Config.neural_net['input_image_height']))
-                image = self.image_process.process(image)
-                
-                npimg = np.expand_dims(image, axis=0)
-                predict = self.net_model.model.predict(npimg)
-                pred_steering_angle = predict[0][0]
-                pred_steering_angle = pred_steering_angle / Config.neural_net['steering_angle_scale']
-                
-                if Config.neural_net['num_outputs'] == 2:
-                    pred_throttle = predict[0][1]
-
-                label_steering_angle = measurement[0]
-                self.measurements.append(label_steering_angle)
-                self.predictions.append(pred_steering_angle)
-                diff = abs(label_steering_angle - pred_steering_angle)
-                self.differences.append(diff)
-                self.squared_differences.append(diff**2)
-                #print(image_name, measurement[0], predict,\ 
-                #                  abs(measurement[0]-predict))
-                log = image_name+','+str(label_steering_angle) + ',' + str(pred_steering_angle)\
-                                +','+str(diff)\
-                                +','+str(diff**2)
-
-                file.write(log+'\n')
+            file.write(log+'\n')
         
         file.close()
         print('Saved ' + fname + '.')
