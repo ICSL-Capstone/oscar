@@ -18,7 +18,7 @@ steering_angle_tolerance: 0.015 # around 7.5 degree
 #                 False for new datasets.
 crop: False
 # brake
-brake: True
+brake: False
 
 # vehicle name
 vehicle_name: fusion

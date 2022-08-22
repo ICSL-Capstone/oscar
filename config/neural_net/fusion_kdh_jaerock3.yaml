@@ -17,17 +17,12 @@ weight_load: False
 
 style_train: False
 style_run: False
-lstm: False
-lstm_timestep: 5
-lstm_dataterm: 1
-data_timegap: 3       # seconds
-lstm_lr: 0.0001        # 
 
 cnn_lr:  0.0001          # default of Adam is 0.001
 
 decay: 0.0000001        #lstm = 1e-9, cnn = 1e-7 0.00000001
 # normalize data
-data_split: False
+data_split: True
 normalize_data: False
 samples_per_bin: 4000
 # training 
@@ -35,8 +30,8 @@ samples_per_bin: 4000
 validation_rate: 0.3
 num_epochs: 1000
 batch_size: 64
-num_inputs: 3     # input: image, velocity
-num_outputs: 3    # output: steering_angle, throttle, brake
+num_inputs: 1     # input: image, velocity
+num_outputs: 1    # output: steering_angle, throttle, brake
 early_stopping_patience: 200
 # tensorboard log dir
 tensorboard_log_dir: logs/scalars/
@@ -53,7 +48,6 @@ input_image_depth : 3
 # steering data preprocessing
 # - steering angle adjustment
 steering_angle_scale: 5.0
-throttle_scale: 5.0
-brake_scale: 5.0
+
 # - steering wheel jitter tolerance
 steering_angle_jitter_tolerance: 0.01

@@ -20,12 +20,7 @@ from config import Config
 class DriveData:
 
     csv_header = ['image_fname', 
-                  'steering_angle', 'throttle', 'brake', 
-                  'linux_time', 
-                  'vel', 'vel_x', 'vel_y', 'vel_z',
-                  'accel_x', 'accel_y', 
-                  'pos_x', 'pos_y', 'pos_z', 
-                  'delta_steering_angle', 'delta_throttle', 'delta_brake']
+                  'steering_angle']
 
 
     def __init__(self, csv_fname):
@@ -33,11 +28,6 @@ class DriveData:
         self.df = None
         self.image_names = []
         self.measurements = []
-        self.time_stamps = []
-        self.velocities = []
-        self.velocities_xyz = []
-        self.positions_xyz = []
-        self.delta = []
         
     def read(self, read = True, show_statistics = True, normalize = True):
         self.df = pd.read_csv(self.csv_fname, names=self.csv_header, index_col=False)
@@ -49,20 +39,6 @@ class DriveData:
             print('\n####### data statistics #########')
             print('Steering Command Statistics:')
             print(self.df['steering_angle'].describe())
-
-            print('\nThrottle Command Statistics:')
-            # Throttle Command Statistics
-            print(self.df['throttle'].describe())
-
-            if Config.data_collection['brake'] is True:
-                print('\nBrake Command Statistics:')
-                # Throttle Command Statistics
-                print(self.df['brake'].describe())
-                
-            if Config.neural_net['num_outputs'] == 2:
-                print('\nVelocity Command Statistics:')
-                # Throttle Command Statistics
-                print(self.df['vel'].describe())
 
         ############################################
         # normalize data
@@ -116,28 +92,7 @@ class DriveData:
             
             for i in bar(range(num_data)): # we don't have a title
                 self.image_names.append(self.df.loc[i]['image_fname'])
-                if Config.data_collection['brake'] is True:
-                    self.measurements.append((float(self.df.loc[i]['steering_angle']),
-                                            float(self.df.loc[i]['throttle']), 
-                                            float(self.df.loc[i]['brake'])))
-                # else:
-                #     self.measurements.append((float(self.df.loc[i]['steering_angle']),
-                #                             float(self.df.loc[i]['throttle']), 
-                #                             0.0)) # dummy value for old data
-                self.time_stamps.append(float(self.df.loc[i]['linux_time']))
-                self.velocities.append(float(self.df.loc[i]['vel']))
-                self.velocities_xyz.append((float(self.df.loc[i]['vel_x']), 
-                                            float(self.df.loc[i]['vel_y']), 
-                                            float(self.df.loc[i]['vel_z']),
-                                            float(self.df.loc[i]['accel_x']), 
-                                            float(self.df.loc[i]['accel_y'])))
-                self.positions_xyz.append((float(self.df.loc[i]['pos_x']), 
-                                            float(self.df.loc[i]['pos_y']), 
-                                            float(self.df.loc[i]['pos_z'])))
-                self.delta.append((float(self.df.loc[i]['delta_steering_angle']),
-                                            float(self.df.loc[i]['delta_throttle']),
-                                            float(self.df.loc[i]['delta_brake'])))
-
+                self.measurements.append((float(self.df.loc[i]['steering_angle'])))
 
     def get_data_path(self):
         loc_slash = self.csv_fname.rfind('/')
