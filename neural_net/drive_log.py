@@ -120,8 +120,9 @@ class DriveLog:
         mean = sum(self.differences)/len(self.differences)
         variance = sum([((x - mean) ** 2) for x in self.differences]) / len(self.differences) 
         std = variance ** 0.5
-        mce = self._cal_mce(self.predictions)
-        plt.title('MAE: {0:.3f}, STDEV: {1:.3f}, MCE: {1:.8f}'.format(mean, std, mce))
+        # mce = self._cal_mce(self.predictions)
+        plt.title('MAE: {0:.3f}, STDEV: {1:.3f}'.format(mean, std))
+        # plt.title('MAE: {0:.3f}, STDEV: {1:.3f}, MCE: {1:.8f}'.format(mean, std, mce))
         #plt.title('Ground Truth vs. Prediction')
         # plt.ylim([-1.0, 1.0])
         plt.xlabel('Time Step')
