@@ -59,18 +59,20 @@ class NetModel:
         self.name = model_name.strip('/')
 
         self.model_path = model_path
-        #self.config = Config()
-
-        # to address the error:
-        #   Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR
-        os.environ["CUDA_VISIBLE_DEVICES"]=str(config['gpus'])
         
-        gpu_options = tf.GPUOptions(allow_growth=True)
-        sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-        K.tensorflow_backend.set_session(sess)
-        # with tf.device('/cpu:0'):
-        
-        self._model(base_model_path=base_model_path)
+        if config['gpus'] == 'cpu':
+            os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+            os.environ["CUDA_VISIBLE_DEVICES"] = ""
+            # sess = tf.Session(config=tf.ConfigProto())
+            # K.tensorflow_backend.set_session(sess)
+            self._model(base_model_path=base_model_path)
+            
+        else:
+            os.environ["CUDA_VISIBLE_DEVICES"]=str(config['gpus'])
+            gpu_options = tf.GPUOptions(allow_growth=True)
+            sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+            K.tensorflow_backend.set_session(sess)
+            self._model(base_model_path=base_model_path)
 
     ###########################################################################
     #
