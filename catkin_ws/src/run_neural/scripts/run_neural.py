@@ -56,10 +56,10 @@ class NeuralControl:
         self.term_count = 0
     def _controller_cb(self, image): 
         img = self.ic.imgmsg_to_opencv(image)
-        cropped = img[Config.data_collection['image_crop_y1']:Config.data_collection['image_crop_y2'],
-                      Config.data_collection['image_crop_x1']:Config.data_collection['image_crop_x2']]
+        # cropped = img[Config.data_collection['image_crop_y1']:Config.data_collection['image_crop_y2'],
+        #               Config.data_collection['image_crop_x1']:Config.data_collection['image_crop_x2']]
                       
-        img = cv2.resize(cropped, (config['input_image_width'],
+        img = cv2.resize(img, (config['input_image_width'],
                                    config['input_image_height']))
                                   
         self.image = self.image_process.process(img)
