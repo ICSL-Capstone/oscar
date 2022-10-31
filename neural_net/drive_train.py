@@ -104,22 +104,25 @@ class DriveTrain:
     def _build_model(self, show_summary=True):
 
         def _data_augmentation(image, steering_angle):
+            is_aug = False
             if config['data_aug_flip'] is True:    
                 # Flipping the image
-                return True, self.data_aug.flipping(image, steering_angle)
+                image, steering_angle = self.data_aug.flipping(image, steering_angle)
+                is_aug = True
 
             if config['data_aug_bright'] is True:    
                 # Changing the brightness of image
                 if steering_angle > config['steering_angle_jitter_tolerance'] or \
                     steering_angle < -config['steering_angle_jitter_tolerance']:
                     image = self.data_aug.brightness(image)
-                return True, image, steering_angle
+                    is_aug = True
 
             if config['data_aug_shift'] is True:    
                 # Shifting the image
-                return True, self.data_aug.shift(image, steering_angle)
+                image, steering_angle = self.data_aug.shift(image, steering_angle)
+                is_aug = True
 
-            return False, image, steering_angle
+            return is_aug, image, steering_angle
 
         def _prepare_batch_samples(batch_samples, data=None):
             images = []
@@ -136,9 +139,9 @@ class DriveTrain:
                 image = cv2.imread(image_path)
                 # if collected data is not cropped then crop here
                 # otherwise do not crop.
-                if Config.data_collection['crop'] is not True:
-                    image = image[Config.data_collection['image_crop_y1']:Config.data_collection['image_crop_y2'],
-                                  Config.data_collection['image_crop_x1']:Config.data_collection['image_crop_x2']]
+                # if Config.data_collection['crop'] is not True:
+                #     image = image[Config.data_collection['image_crop_y1']:Config.data_collection['image_crop_y2'],
+                #                   Config.data_collection['image_crop_x1']:Config.data_collection['image_crop_x2']]
                 image = cv2.resize(image, 
                                     (config['input_image_width'],
                                     config['input_image_height']))
@@ -231,7 +234,7 @@ class DriveTrain:
                 validation_steps=self.num_valid_samples//config['batch_size'],
                 verbose=1, callbacks=callbacks, 
                 use_multiprocessing=True,
-                workers=12)
+                workers=24)
         
     ###########################################################################
     #
